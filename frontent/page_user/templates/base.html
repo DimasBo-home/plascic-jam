@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+	<title>
+			{% block title %}
+			{% endblock title %}
+	</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<style type="text/css">
+		td,th{
+			text-align: center;
+		}
+		tr:hover{
+			background-color: #323;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body class="bg-success">
+
+
+<nav class="container navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">PlasticJam Task</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="/">List user</a>
+      </li>
+    </ul>
+</nav>
+	<header class="container-full ">
+		<div class="container ">
+			<div class="row">
+			{% block header %}
+			{% endblock header %}
+			</div>
+		</div>
+	</header>
+	<section class="container-full">
+		{% block content %}
+		{% endblock content %}
+	</section>
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	</script>
+	{% block script %}
+	{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}User {{user}}{% endblock title%}
+
+{% block header %}
+<h2 class="col-12 my-2 py-2 bg-info spinner-grow"  id="username"></h2>
+<div class="text-white pt-2 bg-dark col-md-6">
+	<p class="spinner-grow text-success" id="id"></p>
+	<p class="spinner-grow text-success" id="email"></p>
+	<p class="spinner-grow text-success" id="gender"></p>
+</div>
+<div class="text-white pt-2 bg-dark col-md-6">
+	<p class="spinner-grow text-success" id="ip"></p>
+	<p class="spinner-grow text-success" id="total_clicks"></p>
+	<p class="spinner-grow text-success" id="total_page_views"></p>
+</div>
+</div>
+{% endblock header%}
+{% block content %}
+<div class="container bd-white">
+	<div class="row ">
+		<details class="col-md-12 mt-2  p-3 bg-white">
+			<summary>Change Date</summary>
+			<form id="changeDate">
+				<label for="date1">Date 1</label>
+				<input type="text" placeholder="2019-10-01"  pattern="[0-9]{4}-[0-1][0-9]-[0-3]{1}[0-9]{1}" class="form-control" id="date1" value="">
+				<label for="date2">Date 2</label>
+				<input type="text"  placeholder="2019-10-30" pattern="[0-9]{4}-[0-1][0-9]-[0-3]{1}[0-9]{1}" class="form-control" id="date2" value="">
+
+				<button type="submit" class="my-2 btn btn-primary">Submit</button>
+			</form>
+		</details>
+
+		<div class="col-md-12 mt-3 bg-white p-3 ">
+			<div  id="curve_chart_clicks" style="height: 400px"></div>
+		</div>
+		<div class="col-md-12 p-3 mt-3	bg-white ">
+			<div  id="curve_chart_page_veiws" style="height: 400px"></div>
+		</div>
+
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script type="text/javascript">
+	$('#changeDate').submit(function(event)
+	{
+		alert("abc");
+		event.preventDefault(); // if you want to disable the action
+		console.log(event);
+		console.log(document.querySelector("#date1"));
+		console.log(document.querySelector("#date2"));
+		return false;
+	});
+	$(document).ready( function() {
+	// {"id":1,"first_name":"Christie","last_name":"Gann","email":"cgann0@hostgator.com","gender":"F","ip_address":"57.14.195.231"}
+	$.ajax({
+		url: 'http://127.0.0.1:8000/api/user/{{id}}/',
+		type: 'GET',
+		crossDomain: true,
+		success: function(data) {
+			var email = document.querySelector("#email");
+			var gender = document.querySelector("#gender");
+			var ip = document.querySelector("#ip");
+			var id = document.querySelector("#id");
+			var username = document.querySelector("#username");
+
+			email.classList.remove("text-success");
+			email.classList.remove("spinner-grow");
+			email.innerHTML = data["email"];
+
+			gender.classList.remove("text-success");
+			gender.classList.remove("spinner-grow");
+			gender.innerHTML = (data["gender"] == "M") ? "Male" : "Female";
+
+			ip.classList.remove("text-success");
+			ip.classList.remove("spinner-grow");
+			ip.innerHTML = "ip: " + data["ip_address"];
+
+			id.classList.remove("text-success");
+			id.classList.remove("spinner-grow");
+			id.innerHTML = "id: " + data["id"];
+
+			username.classList.remove("text-success");
+			username.classList.remove("spinner-grow");
+			username.innerHTML = data["first_name"] + " "+data["last_name"];
+		},
+		error: function() { alert('Failed!'); },
+	});
+});
+</script>
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type="text/javascript">
+	var data_grafic1,data_grafic1;
+	
+	function grafic1(){
+		var data = google.visualization.arrayToDataTable(data_grafic1);
+		var options = {title: 'clicks'};
+		var chart = new google.charts.Line(document.querySelector('#curve_chart_clicks'));
+		chart.draw(data, google.charts.Line.convertOptions(options));
+	}
+
+	function grafic2(){
+		var data = google.visualization.arrayToDataTable(data_grafic2);
+		var options = {title: 'Page views'};
+		var chart = new google.charts.Line(document.querySelector('#curve_chart_page_veiws'));
+		chart.draw(data, google.charts.Line.convertOptions(options));
+
+	}
+	
+	$.ajax({
+		url: 'http://127.0.0.1:8000/api/statistic/?user_id={{id}}',
+		type: 'GET',
+		crossDomain: true,
+		success: function(data) {
+			length = data.length;
+			var total_clicks = document.querySelector("#total_clicks");
+			var total_page_views = document.querySelector("#total_page_views");
+
+			total_clicks.classList.remove("text-success");
+			total_clicks.classList.remove("spinner-grow");
+			total_clicks.innerHTML = "total clicks: " + data[data.length-1]["clicks"];
+
+			total_page_views.classList.remove("text-success");
+			total_page_views.classList.remove("spinner-grow");
+			total_page_views.innerHTML = "total page views: " +  data[data.length-1]["page_views"];
+
+			data_grafic1 = [["date","clicks"]]
+			data_grafic2 = [["date","page_views"]]
+			
+			var l = length-1;
+			var old_day = Number(data[l]['date'].slice(-2));
+			data_grafic1.push([data[l]["date"],data[l]["clicks"]]);
+			data_grafic2.push([data[l]["date"],data[l]["page_views"]]);
+			l-=1;
+			while(data_grafic1.length<9){
+				day = Number(data[l]['date'].slice(-2));
+				if (old_day == day+1){
+					data_grafic1.push([data[l]["date"],data[l]["clicks"]]);
+					data_grafic2.push([data[l]["date"],data[l]["page_views"]]);
+					old_day = day;
+				}else{
+					data_grafic1.push([String("2019-10-"+(old_day-1)),0]);
+					data_grafic2.push([String("2019-10-"+(old_day-1)),0]);
+					old_day -= 1;
+				}
+				l-=1;
+			}
+			console.log(data_grafic1);
+			console.log(data_grafic2);
+			
+			google.charts.load('current', {'packages':['line']});
+			google.charts.setOnLoadCallback(grafic1);
+			google.charts.setOnLoadCallback(grafic2);
+
+		},
+		error: function() { alert('Failed!'); },
+	});
+</script>
+
+{% endblock %}
